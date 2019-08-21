@@ -1,3 +1,6 @@
+#data
+data/bitstampUSD_1-min_data_2012-01-01_to_2019-03-13.csv
+data/coinbaseUSD_1-min_data_2014-12-01_to_2019-01-09.csv
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
