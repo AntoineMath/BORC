@@ -8,8 +8,8 @@ MAX_NUM_SHARES = 2147483647
 MAX_SHARE_PRICE = 5000
 MAX_OPEN_POSITIONS = 5
 MAX_STEPS = 20000
-
 INITIAL_ACCOUNT_BALANCE = 10000
+
 
 class BTSeaEnv(gym.Env):
     """BT sea environment that follows gym interface"""
@@ -22,22 +22,17 @@ class BTSeaEnv(gym.Env):
 
         self.action_space = spaces.Box(low=np.array([0, 0]), high=np.array([3, 1]), dtype=np.float16)
 
-        #prices contains the OHCL values for the last five prices
+        # prices contains the OHCL values for the last five prices
         self.observation_space=spaces.Box(low=0, high=1, shape=(6, 6))
 
     def _next_observation(self):
         # Get the stock data points for the last 5 days and scale to between 0-1
         frame = np.array([
-            self.df.loc[self.current_step: self.current_step +
-                                           5, 'Open'].values / MAX_SHARE_PRICE,
-            self.df.loc[self.current_step: self.current_step +
-                                           5, 'High'].values / MAX_SHARE_PRICE,
-            self.df.loc[self.current_step: self.current_step +
-                                           5, 'Low'].values / MAX_SHARE_PRICE,
-            self.df.loc[self.current_step: self.current_step +
-                                           5, 'Close'].values / MAX_SHARE_PRICE,
-            self.df.loc[self.current_step: self.current_step +
-                                           5, 'Volume'].values / MAX_NUM_SHARES,
+            self.df.loc[self.current_step: self.current_step + 5, 'open'].values / MAX_SHARE_PRICE,
+            self.df.loc[self.current_step: self.current_step + 5, 'high'].values / MAX_SHARE_PRICE,
+            self.df.loc[self.current_step: self.current_step + 5, 'low'].values / MAX_SHARE_PRICE,
+            self.df.loc[self.current_step: self.current_step + 5, 'close'].values / MAX_SHARE_PRICE,
+            self.df.loc[self.current_step: self.current_step + 5, 'volume'].values / MAX_NUM_SHARES,
         ])
         # Append additional data and scale each value to between 0-1
         obs = np.append(frame, [[
@@ -51,11 +46,10 @@ class BTSeaEnv(gym.Env):
 
         return obs
 
-
     def _take_action(self, action):
         # Set the current price to a random price within the time step
         current_price = random.uniform(
-            self.df.loc[self.current_step, "Open"], self.df.loc[self.current_step, "Close"])
+            self.df.loc[self.current_step, "open"], self.df.loc[self.current_step, "close"])
 
         action_type = action[0]
         amount = action[1]
@@ -87,14 +81,13 @@ class BTSeaEnv(gym.Env):
         if self.shares_held == 0:
             self.cost_basis = 0
 
-
     def step(self, actions):
         # Execute one time step within the environment
-        self._take_action(action)
+        self._take_action(actions)
 
         self.current_step += 1
 
-        if self.current_step > len(self.df.loc[:, 'Open'].values) - 6:
+        if self.current_step > len(self.df.loc[:, 'open'].values) - 6:
             self.current_step = 0
 
         delay_modifier = (self.current_step / MAX_STEPS)
@@ -105,7 +98,6 @@ class BTSeaEnv(gym.Env):
         obs = self._next_observation()
 
         return obs, reward, done, {}
-
 
     def reset(self):
         self.balance = INITIAL_ACCOUNT_BALANCE
@@ -122,16 +114,11 @@ class BTSeaEnv(gym.Env):
         return self._next_observation()
 
     def render(self, mode='human', close=False):
-      # Render the environment to the screen
-      profit = self.net_worth - INITIAL_ACCOUNT_BALANCE
-      print(f'Step: {self.current_step}')
-      print(f'Balance: {self.balance}')
-      print(f'Shares held: {self.shares_held}
-              (Total sold: {self.total_shares_sold})')
-      print(f'Avg cost for held shares: {self.cost_basis}
-              (Total sales value: {self.total_sales_value})')
-      print(f'Net worth: {self.net_worth}
-              (Max net worth: {self.max_net_worth})')
-      print(f'Profit: {profit}')
-
-
+        # Render the environment to the screen
+        profit = self.net_worth - INITIAL_ACCOUNT_BALANCE
+        print(f'Step: {self.current_step}')
+        print(f'Balance: {self.balance}')
+        print(f'Shares held: {self.shares_held} (Total sold: {self.total_shares_sold})')
+        print(f'Avg cost for held shares: {self.cost_basis} (Total sales value: {self.total_sales_value})')
+        print(f'Net worth: {self.net_worth} (Max net worth: {self.max_net_worth})')
+        print(f'Profit: {profit}')
