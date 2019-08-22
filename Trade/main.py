@@ -1,11 +1,11 @@
-import sys
+import sys, os
 from time import sleep
 import datetime
 from binance.client import Client
 
-from ..Data import keys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
+import Data.keys
 
 
-# client = Client(keys.api_key, keys.secret_key)
-# print(client)
-
+client = Client(keys.api_key, keys.secret_key)
+print(client)
