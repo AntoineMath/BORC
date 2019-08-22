@@ -3,6 +3,14 @@ import gym
 from gym import spaces
 import random
 
+MAX_ACCOUNT_BALANCE = 2147483647
+MAX_NUM_SHARES = 2147483647
+MAX_SHARE_PRICE = 5000
+MAX_OPEN_POSITIONS = 5
+MAX_STEPS = 20000
+
+INITIAL_ACCOUNT_BALANCE = 10000
+
 class BTSeaEnv(gym.Env):
     """BT sea environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
