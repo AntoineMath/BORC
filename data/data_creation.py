@@ -1,14 +1,14 @@
-import keys
 import datetime
 import pandas as pd
 from time import sleep
 from binance.client import Client
+import keys
 
 CLIENT = Client(keys.apiKey, keys.secretKey)
 CSV_NAME = "BTCUSDT_1MIN_22_08_2019.csv"
 
 DATA_TO_CSV = CLIENT.get_historical_klines(
-    "BTCUSDT", Client.KLINE_INTERVAL_1MINUTE, "1 year ago UTC"
+    "BTCUSDT", Client.KLINE_INTERVAL_1MINUTE, "1 hour ago UTC"
 )
 
 DATA_TO_CSV = pd.DataFrame(
