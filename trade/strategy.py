@@ -15,9 +15,7 @@ def __trade__(api_key, secret_key):
     logging.basicConfig(filename="info.log", level=logging.DEBUG)
     TIME_START = datetime.datetime.now()
     CLIENT = Client(api_key, secret_key)
-
     logging.info("aya")
 
 
 print(__trade__(data.keys.apiKey, data.keys.secretKey))
-logging.info("aya")
