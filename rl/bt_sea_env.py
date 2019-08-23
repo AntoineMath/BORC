@@ -1,124 +1,107 @@
-import numpy as np
 import gym
 from gym import spaces
-import random
-
-MAX_ACCOUNT_BALANCE = 2147483647
-MAX_NUM_SHARES = 2147483647
-MAX_SHARE_PRICE = 5000
-MAX_OPEN_POSITIONS = 5
-MAX_STEPS = 20000
-INITIAL_ACCOUNT_BALANCE = 10000
+from gym.utils import seeding
+import numpy as np
+import itertools
 
 
-class BTSeaEnv(gym.Env):
-    """BT sea environment that follows gym interface"""
-    metadata = {'render.modes': ['human']}
+class TradingEnv(gym.Env):
+    """
+    A 3-stock (MSFT, IBM, QCOM) trading environment.
+    State: [# of stock owned, current stock prices, cash in hand]
+    - array of length n_stock * 2 + 1
+    - price is discretized (to integer) to reduce state space
+    - use close price for each stock
+    - cash in hand is evaluated at each step based on action performed
+    Action: sell (0), hold (1), and buy (2)
+    - when selling, sell all the shares
+    - when buying, buy as many as cash in hand allows
+    - if buying multiple stock, equally distribute cash in hand and then utilize the balance
+    """
+    def __init__(self, train_data, init_invest=20000):
+        # data
+        self.stock_price_history = np.around(train_data) # round up to integer to reduce state space
+        self.n_stock, self.n_step = self.stock_price_history.shape
 
-    def __init__(self, df):
-        super(BTSeaEnv, self).__init__()
-        self.df = df
-        self.reward_range = (0, MAX_ACCOUNT_BALANCE)
+        # instance attributes
+        self.init_invest = init_invest
+        self.cur_step = None
+        self.stock_owned = None
+        self.stock_price = None
+        self.cash_in_hand = None
 
-        self.action_space = spaces.Box(low=np.array([0, 0]), high=np.array([3, 1]), dtype=np.float16)
+        # action space
+        self.action_space = spaces.Discrete(3**self.n_stock)
 
-        # prices contains the OHCL values for the last five prices
-        self.observation_space=spaces.Box(low=0, high=1, shape=(6, 6))
+        # observation space: give estimates in order to sample and build scaler
+        stock_max_price = self.stock_price_history.max(axis=1)
+        stock_range = [[0, init_invest * 2 // mx] for mx in stock_max_price]
+        price_range = [[0, mx] for mx in stock_max_price]
+        cash_in_hand_range = [[0, init_invest * 2]]
+        self.observation_space = spaces.MultiDiscrete(stock_range + price_range + cash_in_hand_range)
 
-    def _next_observation(self):
-        # Get the stock data points for the last 5 days and scale to between 0-1
-        frame = np.array([
-            self.df.loc[self.current_step: self.current_step + 5, 'open'].values / MAX_SHARE_PRICE,
-            self.df.loc[self.current_step: self.current_step + 5, 'high'].values / MAX_SHARE_PRICE,
-            self.df.loc[self.current_step: self.current_step + 5, 'low'].values / MAX_SHARE_PRICE,
-            self.df.loc[self.current_step: self.current_step + 5, 'close'].values / MAX_SHARE_PRICE,
-            self.df.loc[self.current_step: self.current_step + 5, 'volume'].values / MAX_NUM_SHARES,
-        ])
-        # Append additional data and scale each value to between 0-1
-        obs = np.append(frame, [[
-            self.balance / MAX_ACCOUNT_BALANCE,
-            self.max_net_worth / MAX_ACCOUNT_BALANCE,
-            self.shares_held / MAX_NUM_SHARES,
-            self.cost_basis / MAX_SHARE_PRICE,
-            self.total_shares_sold / MAX_NUM_SHARES,
-            self.total_sales_value / (MAX_NUM_SHARES * MAX_SHARE_PRICE),
-        ]], axis=0)
+        # seed and start
+        self._seed()
+        self._reset()
 
+    def _seed(self, seed=None):
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
+
+    def _reset(self):
+        self.cur_step = 0
+        self.stock_owned = [0] * self.n_stock
+        self.stock_price = self.stock_price_history[:, self.cur_step]
+        self.cash_in_hand = self.init_invest
+        return self._get_obs()
+
+    def _step(self, action):
+        assert self.action_space.contains(action)
+        prev_val = self._get_val()
+        self.cur_step += 1
+        self.stock_price = self.stock_price_history[:, self.cur_step] # update price
+        self._trade(action)
+        cur_val = self._get_val()
+        reward = cur_val - prev_val
+        done = self.cur_step == self.n_step - 1
+        info = {'cur_val': cur_val}
+        return self._get_obs(), reward, done, info
+
+    def _get_obs(self):
+        obs = []
+        obs.extend(self.stock_owned)
+        obs.extend(list(self.stock_price))
+        obs.append(self.cash_in_hand)
         return obs
 
-    def _take_action(self, action):
-        # Set the current price to a random price within the time step
-        current_price = random.uniform(
-            self.df.loc[self.current_step, "open"], self.df.loc[self.current_step, "close"])
+    def _get_val(self):
+        return np.sum(self.stock_owned * self.stock_price) + self.cash_in_hand
 
-        action_type = action[0]
-        amount = action[1]
+    def _trade(self, action):
+        # all combo to sell(0), hold(1), or buy(2) stocks
+        action_combo = map(list, itertools.product([0, 1, 2], repeat=self.n_stock))
+        action_vec = action_combo[action]
 
-        if action_type < 1:
-            # Buy amount % of balance in shares
-            total_possible = int(self.balance / current_price)
-            shares_bought = int(total_possible * amount)
-            prev_cost = self.cost_basis * self.shares_held
-            additional_cost = shares_bought * current_price
+        # one pass to get sell/buy index
+        sell_index = []
+        buy_index = []
+        for i, a in enumerate(action_vec):
+            if a == 0:
+                sell_index.append(i)
+            elif a == 2:
+                buy_index.append(i)
 
-            self.balance -= additional_cost
-            self.cost_basis = (prev_cost + additional_cost) / (self.shares_held + shares_bought)
-            self.shares_held += shares_bought
-
-        elif action_type < 2:
-            # Sell amount % of shares held
-            shares_sold = int(self.shares_held * amount)
-            self.balance += shares_sold * current_price
-            self.shares_held -= shares_sold
-            self.total_shares_sold += shares_sold
-            self.total_sales_value += shares_sold * current_price
-
-        self.net_worth = self.balance + self.shares_held * current_price
-
-        if self.net_worth > self.max_net_worth:
-            self.max_net_worth = self.net_worth
-
-        if self.shares_held == 0:
-            self.cost_basis = 0
-
-    def step(self, actions):
-        # Execute one time step within the environment
-        self._take_action(actions)
-
-        self.current_step += 1
-
-        if self.current_step > len(self.df.loc[:, 'open'].values) - 6:
-            self.current_step = 0
-
-        delay_modifier = (self.current_step / MAX_STEPS)
-
-        reward = self.balance * delay_modifier
-        done = self.net_worth <= 0
-
-        obs = self._next_observation()
-
-        return obs, reward, done, {}
-
-    def reset(self):
-        self.balance = INITIAL_ACCOUNT_BALANCE
-        self.net_worth = INITIAL_ACCOUNT_BALANCE
-        self.max_net_worth = INITIAL_ACCOUNT_BALANCE
-        self.shares_held = 0
-        self.cost_basis = 0
-        self.total_shares_sold = 0
-        self.total_sales_value = 0
-
-        # Set the current step to a random point within the data frame
-        self.current_step = random.randint(0, len(self.df.loc[:, 'Open'].values) - 6)
-
-        return self._next_observation()
-
-    def render(self, mode='human', close=False):
-        # Render the environment to the screen
-        profit = self.net_worth - INITIAL_ACCOUNT_BALANCE
-        print(f'Step: {self.current_step}')
-        print(f'Balance: {self.balance}')
-        print(f'Shares held: {self.shares_held} (Total sold: {self.total_shares_sold})')
-        print(f'Avg cost for held shares: {self.cost_basis} (Total sales value: {self.total_sales_value})')
-        print(f'Net worth: {self.net_worth} (Max net worth: {self.max_net_worth})')
-        print(f'Profit: {profit}')
+        # two passes: sell first, then buy; might be naive in real-world settings
+        if sell_index:
+            for i in sell_index:
+                self.cash_in_hand += self.stock_price[i] * self.stock_owned[i]
+                self.stock_owned[i] = 0
+        if buy_index:
+            can_buy = True
+            while can_buy:
+                for i in buy_index:
+                    if self.cash_in_hand > self.stock_price[i]:
+                        self.stock_owned[i] += 1 # buy one share
+                        self.cash_in_hand -= self.stock_price[i]
+                    else:
+                        can_buy = False
