@@ -42,20 +42,20 @@ class TradingEnv(gym.Env):
 
         # seed and start
         self._seed()
-        self._reset()
+        self.reset()
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _reset(self):
+    def reset(self):
         self.cur_step = 0
         self.stock_owned = [0] * self.n_stock
         self.stock_price = self.stock_price_history[:, self.cur_step]
         self.cash_in_hand = self.init_invest
         return self._get_obs()
 
-    def _step(self, action):
+    def step(self, action):
         assert self.action_space.contains(action)
         prev_val = self._get_val()
         self.cur_step += 1
