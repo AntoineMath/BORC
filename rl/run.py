@@ -33,7 +33,7 @@ if __name__ == '__main__':
     test_data = data[:, 3526:]
 
     env = TradingEnv(train_data, args.initial_invest)
-    state_size = env.observation_space.shape[0]
+    state_size = np.prod(env.observation_space.shape)
     action_size = env.action_space.n
     agent = BorcAgent(state_size, action_size)
     scaler = get_scaler(env)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
             if done:
                 print("episode: {}/{}, episode end value: {}".format(
                     e + 1, args.episode, info['cur_val']))
-                portfolio_value.append(info['cur_val']) # append episode end portfolio value
+                portfolio_value.append(info['cur_val'])  # append episode end portfolio value
                 break
             if args.mode == 'train' and len(agent.memory) > args.batch_size:
                 agent.replay(args.batch_size)
