@@ -6,9 +6,9 @@ from sklearn.preprocessing import StandardScaler
 
 def get_data(col='close'):
     """ Returns a 3 x n_step array """
-    msft = pd.read_csv('data/daily_MSFT.csv', usecols=[col])
-    ibm = pd.read_csv('data/daily_IBM.csv', usecols=[col])
-    qcom = pd.read_csv('data/daily_QCOM.csv', usecols=[col])
+    msft = pd.read_csv('../data/daily_MSFT.csv', usecols=[col])
+    ibm = pd.read_csv('../data/daily_IBM.csv', usecols=[col])
+    qcom = pd.read_csv('../data/daily_QCOM.csv', usecols=[col])
     # recent price are at top; reverse it
     return np.array([msft[col].values[::-1],
                      ibm[col].values[::-1],
