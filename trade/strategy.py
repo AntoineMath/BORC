@@ -20,6 +20,7 @@ def __trade__(api_key, secret_key, pair1, pair2, amount_to_trade):
     logging.info("START")
     last_trade = "hodl"
     start = True
+    amount_start = amount_to_trade
 
     while True:
 
@@ -30,29 +31,50 @@ def __trade__(api_key, secret_key, pair1, pair2, amount_to_trade):
 
             if simulation.__algo_simulation__(value) == 0:
 
-                if float(client.get_asset_balance(asset=pair1)['free']) < amount_to_trade/value:
+                if float(client.get_asset_balance(
+                        asset=pair1)['free']) < amount_to_trade / value:
 
-                    amount_to_trade = round(float(client.get_asset_balance(asset=pair1)['free'], 4))
+                    amount_to_trade = round(
+                        float(
+                            client.get_asset_balance(asset=pair1)['free'], 4))
 
                 start = False
                 algo_side = "sell"
-                order = client.order_market_sell(symbol=pair1 + pair2, quantity=round(amount_to_trade/value, 4))
-                logging.info("sell BTC to have USDT")
+                order = client.order_market_sell(symbol=pair1 + pair2,
+                                                 quantity=round(
+                                                     amount_to_trade / value,
+                                                     4))
+                logging.info(
+                    str(round(amount_to_trade / value, 4)) + " " + pair1 +
+                    "sold for " + pair2)
+                amount_to_trade = amount_start
 
-        if  last_trade == "sell" or start == True:
+        if last_trade == "sell" or start == True:
 
             if simulation.__algo_simulation__(value) == 2:
 
-                if float(client.get_asset_balance(asset=pair2)['free']) < amount_to_trade:
+                if float(client.get_asset_balance(
+                        asset=pair2)['free']) < amount_to_trade:
 
-                    amount_to_trade = round(float(client.get_asset_balance(asset=pair1)['free'], 4))
+                    amount_to_trade = round(
+                        float(
+                            client.get_asset_balance(asset=pair1)['free'], 4))
 
                 start = False
                 algo_side = "buy"
-                order = client.order_market_buy(symbol=pair1 + pair2, quantity=round(amount_to_trade/value, 4))
-                logging.info("buy BTC against USDT")
+                order = client.order_market_buy(symbol=pair1 + pair2,
+                                                quantity=round(
+                                                    amount_to_trade / value,
+                                                    4))
+
+                logging.info(
+                    str(round(amount_to_trade / value, 4)) + " " + pair1 +
+                    "bought against " + pair2)
+                amount_to_trade = amount_start
 
         sleep(2)
 
 
-__trade__(data.keys.apiKey, data.keys.secretKey, 'BTC', 'USDT', 3)
+if __name__ == "__main__":
+
+    __trade__(data.keys.apiKey, data.keys.secretKey, 'BTC', 'USDT', 3)
