@@ -28,7 +28,11 @@ def __trade__(api_key, secret_key, pair1, pair2, amount_to_trade):
 
         if last_trade == "buy" or start == True:
 
-            if simulation.__algo_simulation__(value) == 0 and float(client.get_asset_balance(asset=pair1)['free']) > amount_to_trade:
+            if simulation.__algo_simulation__(value) == 0:
+
+                if float(client.get_asset_balance(asset=pair1)['free']) < amount_to_trade/value:
+
+                    amount_to_trade = round(float(client.get_asset_balance(asset=pair1)['free'], 4))
 
                 start = False
                 algo_side = "sell"
@@ -37,7 +41,11 @@ def __trade__(api_key, secret_key, pair1, pair2, amount_to_trade):
 
         if  last_trade == "sell" or start == True:
 
-            if simulation.__algo_simulation__(value) == 2 and float(client.get_asset_balance(asset=pair2)['free']) > amount_to_trade:
+            if simulation.__algo_simulation__(value) == 2:
+
+                if float(client.get_asset_balance(asset=pair2)['free']) < amount_to_trade:
+
+                    amount_to_trade = round(float(client.get_asset_balance(asset=pair1)['free'], 4))
 
                 start = False
                 algo_side = "buy"
@@ -47,4 +55,4 @@ def __trade__(api_key, secret_key, pair1, pair2, amount_to_trade):
         sleep(2)
 
 
-print(__trade__(data.keys.apiKey, data.keys.secretKey, 'BTC', 'USDT', 3))
+__trade__(data.keys.apiKey, data.keys.secretKey, 'BTC', 'USDT', 3)
