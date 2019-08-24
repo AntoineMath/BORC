@@ -33,7 +33,7 @@ if __name__ == '__main__':
     test_data = data[:, 3526:]
 
     env = TradingEnv(train_data, args.initial_invest)
-    state_size = env.observation_space.shape
+    state_size = env.observation_space.shape[0]
     action_size = env.action_space.n
     agent = BorcAgent(state_size, action_size)
     scaler = get_scaler(env)
