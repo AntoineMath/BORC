@@ -80,7 +80,7 @@ class TradingEnv(gym.Env):
     def _trade(self, action):
         # all combo to sell(0), hold(1), or buy(2) stocks
         action_combo = map(list, itertools.product([0, 1, 2], repeat=self.n_stock))
-        action_vec = action_combo[action]
+        action_vec = list(action_combo)[action]
 
         # one pass to get sell/buy index
         sell_index = []
