@@ -101,7 +101,7 @@ class TradingEnv(gym.Env):
             while can_buy:
                 for i in buy_index:
                     if self.cash_in_hand > self.stock_price[i]:
-                        self.stock_owned[i] += 1 # buy one share
+                        self.stock_owned[i] += 1  # buy one share
                         self.cash_in_hand -= self.stock_price[i]
                     else:
                         can_buy = False
