@@ -20,7 +20,7 @@ class TradingEnv(gym.Env):
     """
     def __init__(self, train_data, init_invest=20000):
         # data
-        self.stock_price_history = np.around(train_data) # round up to integer to reduce state space
+        self.stock_price_history = np.around(train_data)  # round up to integer to reduce state space
         self.n_stock, self.n_step = self.stock_price_history.shape
 
         # instance attributes
@@ -35,27 +35,27 @@ class TradingEnv(gym.Env):
 
         # observation space: give estimates in order to sample and build scaler
         stock_max_price = self.stock_price_history.max(axis=1)
-        stock_range = [[0, init_invest * 2 // mx] for mx in stock_max_price]
-        price_range = [[0, mx] for mx in stock_max_price]
-        cash_in_hand_range = [[0, init_invest * 2]]
+        stock_range = [init_invest * 2 // mx + 1 for mx in stock_max_price]
+        price_range = [mx + 1 for mx in stock_max_price]
+        cash_in_hand_range = [init_invest * 2 + 1]
         self.observation_space = spaces.MultiDiscrete(stock_range + price_range + cash_in_hand_range)
 
         # seed and start
         self._seed()
-        self._reset()
+        self.reset()
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _reset(self):
+    def reset(self):
         self.cur_step = 0
         self.stock_owned = [0] * self.n_stock
         self.stock_price = self.stock_price_history[:, self.cur_step]
         self.cash_in_hand = self.init_invest
         return self._get_obs()
 
-    def _step(self, action):
+    def step(self, action):
         assert self.action_space.contains(action)
         prev_val = self._get_val()
         self.cur_step += 1
@@ -80,7 +80,7 @@ class TradingEnv(gym.Env):
     def _trade(self, action):
         # all combo to sell(0), hold(1), or buy(2) stocks
         action_combo = map(list, itertools.product([0, 1, 2], repeat=self.n_stock))
-        action_vec = action_combo[action]
+        action_vec = list(action_combo)[action]
 
         # one pass to get sell/buy index
         sell_index = []
@@ -101,7 +101,7 @@ class TradingEnv(gym.Env):
             while can_buy:
                 for i in buy_index:
                     if self.cash_in_hand > self.stock_price[i]:
-                        self.stock_owned[i] += 1 # buy one share
+                        self.stock_owned[i] += 1  # buy one share
                         self.cash_in_hand -= self.stock_price[i]
                     else:
                         can_buy = False

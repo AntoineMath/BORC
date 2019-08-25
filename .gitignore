@@ -1,3 +1,7 @@
+#training or testing logs
+rl/portfolio_val
+rl/weights
+
 #vscode
 .vscode/
 #config files
