@@ -29,6 +29,7 @@ class TradingEnv(gym.Env):
         self.stock_owned = None
         self.stock_price = None
         self.cash_in_hand = None
+        self.fees = 0.00075  # Assuming we use BNB on Binance
 
         # action space
         self.action_space = spaces.Discrete(3**self.n_stock)
@@ -94,7 +95,7 @@ class TradingEnv(gym.Env):
         # two passes: sell first, then buy; might be naive in real-world settings
         if sell_index:
             for i in sell_index:
-                self.cash_in_hand += self.stock_price[i] * self.stock_owned[i]
+                self.cash_in_hand += (1-self.fees) * self.stock_price[i] * self.stock_owned[i]
                 self.stock_owned[i] = 0
         if buy_index:
             can_buy = True
@@ -102,6 +103,6 @@ class TradingEnv(gym.Env):
                 for i in buy_index:
                     if self.cash_in_hand > self.stock_price[i]:
                         self.stock_owned[i] += 1  # buy one share
-                        self.cash_in_hand -= self.stock_price[i]
+                        self.cash_in_hand -= (1 + self.fees) * self.stock_price[i]
                     else:
                         can_buy = False
