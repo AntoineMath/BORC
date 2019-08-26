@@ -5,14 +5,14 @@ import argparse
 import re
 
 
-from rl.bt_sea_env import TradingEnv
-from rl.borc_agent import BorcAgent
-from rl.utils import get_data, get_scaler, maybe_make_dir
+from bt_sea_env import TradingEnv
+from borc_agent import BorcAgent
+from utils import get_data, get_scaler, maybe_make_dir
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-e', '--episode', type=int, default=2000,
+    parser.add_argument('-e', '--episode', type=int, default=100,
                         help='number of episode to run')
     parser.add_argument('-b', '--batch_size', type=int, default=32,
                         help='batch size for experience replay')

@@ -73,7 +73,7 @@ class TestStrategy(bt.Strategy):
 if __name__ == "__main__":
     cerebro = bt.Cerebro()
     cerebro.addstrategy(TestStrategy)
-    datapath = os.path.abspath(os.getcwd() + "/BTC_20_08_2019")
+    datapath = os.path.abspath(os.getcwd() + "/data/BTC_20_08_2019")
 
     # Create a Data Feed
     data = btfeeds.GenericCSVData(
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     cerebro.addsizer(bt.sizers.FixedSize, stake=0.05)
 
-    cerebro.broker.setcommission(commission=0.005)
+    cerebro.broker.setcommission(commission=0.00075)
 
     print("Starting Balance: %.2f" % cerebro.broker.getvalue())
 
