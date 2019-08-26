@@ -5,10 +5,10 @@ from binance.client import Client
 import keys
 
 CLIENT = Client(keys.apiKey, keys.secretKey)
-CSV_NAME = "BTCUSDT_1MIN_22_08_2019.csv"
+CSV_NAME = "ETHUSDT_1HOUR_26_08_2019.csv"
 
 DATA_TO_CSV = CLIENT.get_historical_klines(
-    "BTCUSDT", Client.KLINE_INTERVAL_1MINUTE, "1 hour ago UTC"
+    "ETHUSDT", Client.KLINE_INTERVAL_1HOUR, "1 year ago UTC"
 )
 
 DATA_TO_CSV = pd.DataFrame(

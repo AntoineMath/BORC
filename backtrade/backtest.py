@@ -67,7 +67,7 @@ class TestStrategy(bt.Strategy):
 
             if self.dataclose[0] - self.dataclose[-1] < -200:
                 self.log("SELL CREATE, %.2f" % self.dataclose[0])
-                self.order = self.sell()
+                self.order = self.sell()      
 
 
 if __name__ == "__main__":

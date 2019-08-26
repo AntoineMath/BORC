@@ -6,9 +6,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from trade.simulation import __algo_simulation__
 
 
-print(__algo_simulation__("aya"))
-
-
 class TestStrategy(bt.Strategy):
     def log(self, txt, dt=None):
         dt = dt or self.datas[0].datetime.date(0)
@@ -19,6 +16,12 @@ class TestStrategy(bt.Strategy):
         self.order = None
         self.buyprice = None
         self.buycomm = None
+        starting_price = self.dataclose[1]
+        final_price = self.dataclose[0]
+        diff_price = starting_price - final_price
+        percentage_diff_price = 100 * (-diff_price / starting_price)
+        print(diff_price)
+        print(percentage_diff_price)
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -77,7 +80,8 @@ class TestStrategy(bt.Strategy):
 if __name__ == "__main__":
     cerebro = bt.Cerebro()
     cerebro.addstrategy(TestStrategy)
-    datapath = os.path.abspath(os.getcwd() + "/data/BTC_20_08_2019")
+    datapath = os.path.abspath(os.getcwd() +
+                               "/data/ETHUSDT_1HOUR_26_08_2019.csv")
 
     # Create a Data Feed
     data = btfeeds.GenericCSVData(
