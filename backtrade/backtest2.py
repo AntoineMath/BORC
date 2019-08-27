@@ -20,8 +20,6 @@ class TestStrategy(bt.Strategy):
         final_price = self.dataclose[0]
         diff_price = starting_price - final_price
         percentage_diff_price = 100 * (-diff_price / starting_price)
-        print(diff_price)
-        print(percentage_diff_price)
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -107,11 +105,16 @@ if __name__ == "__main__":
 
     cerebro.broker.setcommission(commission=0.00075)
 
-    print("Starting Balance: %.2f" % cerebro.broker.getvalue())
+    starting_balance = cerebro.broker.getvalue()
 
     cerebro.run()
 
-    print("Final Balance: %.2f" % cerebro.broker.getvalue())
+    final_balance = cerebro.broker.getvalue()
+    diff_balance = 100 * (final_balance - starting_balance) / starting_balance
+
+    print("Starting Balance: %.2f" % starting_balance)
+    print("Final Balance: %.2f" % final_balance)
+    print("Difference Balance: %.2f " % diff_balance + " %")
 
     cerebro.plot()
 
