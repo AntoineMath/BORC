@@ -4,23 +4,36 @@ import numpy as np
 import argparse
 import re
 
-
 from bt_sea_env import TradingEnv
 from borc_agent import BorcAgent
 from utils import get_data, get_scaler, maybe_make_dir
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-e', '--episode', type=int, default=100,
+    parser.add_argument('-e',
+                        '--episode',
+                        type=int,
+                        default=100,
                         help='number of episode to run')
-    parser.add_argument('-b', '--batch_size', type=int, default=32,
+    parser.add_argument('-b',
+                        '--batch_size',
+                        type=int,
+                        default=32,
                         help='batch size for experience replay')
-    parser.add_argument('-i', '--initial_invest', type=int, default=20000,
+    parser.add_argument('-i',
+                        '--initial_invest',
+                        type=int,
+                        default=20000,
                         help='initial investment amount')
-    parser.add_argument('-m', '--mode', type=str, required=True,
+    parser.add_argument('-m',
+                        '--mode',
+                        type=str,
+                        required=True,
                         help='either "train" or "test"')
-    parser.add_argument('-w', '--weights', type=str, help='a trained model weights')
+    parser.add_argument('-w',
+                        '--weights',
+                        type=str,
+                        help='a trained model weights')
     args = parser.parse_args()
 
     maybe_make_dir('weights')
@@ -38,9 +51,7 @@ if __name__ == '__main__':
     agent = BorcAgent(state_size, action_size)
     scaler = get_scaler(env)
 
-    history = {"balance": [],
-               "actions": [],
-               "reward": []}
+    history = {"balance": [], "actions": [], "reward": []}
 
     if args.mode == 'test':
         # remake the env with test data
@@ -83,6 +94,6 @@ if __name__ == '__main__':
         history["balance"].append(balance_history)
         history["actions"].append(actions_history)
         history["reward"].append(rewards_history)
-        with open('portfolio_val/{}-{}.p'.format(timestamp, args.mode), 'wb') as fp:
+        with open('portfolio_val/{}-{}.p'.format(timestamp, args.mode),
+                  'wb') as fp:
             pickle.dump(history, fp)
-
