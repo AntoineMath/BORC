@@ -5,7 +5,8 @@ secretKey = "PIp3AKATJfillNs9Lsm1pbUaTMQqMTXFfGS5H77DMwzi6a1GPLOyt78hv03kcf1f"
 
 client = Client(apiKey, secretKey)
 
-klines = client.get_historical_klines(
-"BTCUSDT", Client.KLINE_INTERVAL_1HOUR, "1 day ago UTC"
-)
-print(klines)
+klines = client.get_historical_klines("BTCUSDT", Client.KLINE_INTERVAL_1HOUR,
+                                      "1 day ago UTC")
+
+trades = client.get_my_trades(symbol='BTCUSDT')[-1]
+print(trades)

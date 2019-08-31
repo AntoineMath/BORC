@@ -48,6 +48,14 @@ def __trade__(api_key, secret_key, pair1, pair2, amount_to_trade):
                     " sold for " + pair2)
                 amount_to_trade = amount_start
 
+                trade_price = client.get_my_trades(symbol=pair1 +
+                                                   pair2)[-1]['price']
+                trade_quoteQty = client.get_my_trades(symbol=pair1 +
+                                                      pair2)[-1]['quoteQty']
+                print(
+                    str(datetime.datetime.now()) + ", SELL EXECUTED, Price: " +
+                    str(trade_price) + ", Cost: " + str(trade_quoteQty))
+
         if last_trade == "sell" or start == True:
 
             if simulation.__algo_simulation__(value) == 0:
@@ -71,10 +79,18 @@ def __trade__(api_key, secret_key, pair1, pair2, amount_to_trade):
                     " bought against " + pair2)
                 amount_to_trade = amount_start
 
-        sleep(2)
+                trade_price = client.get_my_trades(symbol=pair1 +
+                                                   pair2)[-1]['price']
+                trade_quoteQty = client.get_my_trades(symbol=pair1 +
+                                                      pair2)[-1]['qty']
+                print(
+                    str(datetime.datetime.now()) + ", BUY EXECUTED, Price: " +
+                    str(trade_price) + ", Cost: " + str(trade_quoteQty))
+
+        sleep(1)
+
 
 logging.info("END")
-
 
 if __name__ == "__main__":
 
