@@ -4,6 +4,7 @@ import os, sys
 import datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from trade.simulation import __algo_simulation__
+import argparse
 
 
 class TestStrategy(bt.Strategy):
@@ -75,7 +76,107 @@ class TestStrategy(bt.Strategy):
                 self.order = self.sell()
 
 
-if __name__ == "__main__":
+def parse_args(pargs=None):
+
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description='Benchmark/TimeReturn Observers Sample')
+
+    parser.add_argument('--data0',
+                        required=False,
+                        default='../../datas/yhoo-1996-2015.txt',
+                        help='Data0 to be read in')
+
+    parser.add_argument('--data1',
+                        required=False,
+                        default='../../datas/orcl-1995-2014.txt',
+                        help='Data1 to be read in')
+
+    parser.add_argument('--benchdata1',
+                        required=False,
+                        action='store_true',
+                        help=('Benchmark against data1'))
+
+    parser.add_argument('--fromdate',
+                        required=False,
+                        default='2005-01-01',
+                        help='Starting date in YYYY-MM-DD format')
+
+    parser.add_argument('--todate',
+                        required=False,
+                        default='2006-12-31',
+                        help='Ending date in YYYY-MM-DD format')
+
+    parser.add_argument('--printout',
+                        required=False,
+                        action='store_true',
+                        help=('Print data lines'))
+
+    parser.add_argument('--cash',
+                        required=False,
+                        action='store',
+                        type=float,
+                        default=50000,
+                        help=('Cash to start with'))
+
+    parser.add_argument('--period',
+                        required=False,
+                        action='store',
+                        type=int,
+                        default=30,
+                        help=('Period for the crossover moving average'))
+
+    parser.add_argument('--stake',
+                        required=False,
+                        action='store',
+                        type=int,
+                        default=1000,
+                        help=('Stake to apply for the buy operations'))
+
+    parser.add_argument('--timereturn',
+                        required=False,
+                        action='store_true',
+                        default=None,
+                        help=('Use TimeReturn observer instead of Benchmark'))
+
+    parser.add_argument('--timeframe',
+                        required=False,
+                        action='store',
+                        default=None,
+                        choices=TIMEFRAMES.keys(),
+                        help=('TimeFrame to apply to the Observer'))
+
+    # Plot options
+    parser.add_argument('--plot',
+                        '-p',
+                        nargs='?',
+                        required=False,
+                        metavar='kwargs',
+                        const=True,
+                        help=('Plot the read data applying any kwargs passed\n'
+                              '\n'
+                              'For example:\n'
+                              '\n'
+                              '  --plot style="candle" (to plot candles)\n'))
+
+    if pargs:
+        return parser.parse_args(pargs)
+
+    return parser.parse_args()
+
+
+TIMEFRAMES = {
+    None: None,
+    'days': bt.TimeFrame.Days,
+    'weeks': bt.TimeFrame.Weeks,
+    'months': bt.TimeFrame.Months,
+    'years': bt.TimeFrame.Years,
+    'notimeframe': bt.TimeFrame.NoTimeFrame,
+}
+
+
+def run_strat(args=None):
+    args = parse_args(args)
     cerebro = bt.Cerebro()
     cerebro.addstrategy(TestStrategy)
     datapath = os.path.abspath(os.getcwd() +
@@ -107,15 +208,23 @@ if __name__ == "__main__":
 
     starting_balance = cerebro.broker.getvalue()
 
-    cerebro.run()
+    cerebro.addobserver(bt.observers.Benchmark,
+                        data=data,
+                        timeframe=TIMEFRAMES[args.timeframe])
+
+    #Run the backtarde
+
+    results = cerebro.run()
 
     final_balance = cerebro.broker.getvalue()
     diff_balance = 100 * (final_balance - starting_balance) / starting_balance
 
     print("Starting Balance: %.2f" % starting_balance)
     print("Final Balance: %.2f" % final_balance)
-    print("Difference Balance: %.2f " % diff_balance + " %")
+    print("Difference Balance: %.2f " % diff_balance + "%")
 
     cerebro.plot()
 
-    print()
+
+if __name__ == "__main__":
+    run_strat()
