@@ -153,10 +153,9 @@ def run_strat(args=None):
 
     cerebro.addobserver(bt.observers.Benchmark,
                         data=data,
-                        timeframe=bt.TimeFrame.Years)
+                        timeframe=bt.TimeFrame.NoTimeFrame)
 
     #Run the backtarde
-
     results = cerebro.run()
 
     final_balance = cerebro.broker.getvalue()
@@ -164,7 +163,7 @@ def run_strat(args=None):
 
     print("Starting Balance: %.2f" % starting_balance)
     print("Final Balance: %.2f" % final_balance)
-    print("Difference Balance: %.2f " % diff_balance + "%")
+    print("Profit: %.2f " % diff_balance + "%")
 
     cerebro.plot()
 
