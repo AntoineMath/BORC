@@ -155,6 +155,9 @@ def run_strat(args=None):
                         data=data,
                         timeframe=bt.TimeFrame.NoTimeFrame)
 
+    cerebro.addobserver(bt.observers.TimeReturn,
+                        timeframe=bt.TimeFrame.NoTimeFrame)
+
     #Run the backtarde
     results = cerebro.run()
 
