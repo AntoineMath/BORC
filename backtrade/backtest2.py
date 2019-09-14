@@ -82,63 +82,6 @@ def parse_args(pargs=None):
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='Benchmark/TimeReturn Observers Sample')
 
-    parser.add_argument('--data0',
-                        required=False,
-                        default='../../datas/yhoo-1996-2015.txt',
-                        help='Data0 to be read in')
-
-    parser.add_argument('--data1',
-                        required=False,
-                        default='../../datas/orcl-1995-2014.txt',
-                        help='Data1 to be read in')
-
-    parser.add_argument('--benchdata1',
-                        required=False,
-                        action='store_true',
-                        help=('Benchmark against data1'))
-
-    parser.add_argument('--fromdate',
-                        required=False,
-                        default='2005-01-01',
-                        help='Starting date in YYYY-MM-DD format')
-
-    parser.add_argument('--todate',
-                        required=False,
-                        default='2006-12-31',
-                        help='Ending date in YYYY-MM-DD format')
-
-    parser.add_argument('--printout',
-                        required=False,
-                        action='store_true',
-                        help=('Print data lines'))
-
-    parser.add_argument('--cash',
-                        required=False,
-                        action='store',
-                        type=float,
-                        default=50000,
-                        help=('Cash to start with'))
-
-    parser.add_argument('--period',
-                        required=False,
-                        action='store',
-                        type=int,
-                        default=30,
-                        help=('Period for the crossover moving average'))
-
-    parser.add_argument('--stake',
-                        required=False,
-                        action='store',
-                        type=int,
-                        default=1000,
-                        help=('Stake to apply for the buy operations'))
-
-    parser.add_argument('--timereturn',
-                        required=False,
-                        action='store_true',
-                        default=None,
-                        help=('Use TimeReturn observer instead of Benchmark'))
-
     parser.add_argument('--timeframe',
                         required=False,
                         action='store',
@@ -210,7 +153,7 @@ def run_strat(args=None):
 
     cerebro.addobserver(bt.observers.Benchmark,
                         data=data,
-                        timeframe=TIMEFRAMES[args.timeframe])
+                        timeframe=bt.TimeFrame.Years)
 
     #Run the backtarde
 
