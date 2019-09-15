@@ -119,6 +119,7 @@ TIMEFRAMES = {
 
 
 def run_strat(args=None):
+
     args = parse_args(args)
     cerebro = bt.Cerebro()
     cerebro.addstrategy(TestStrategy)
@@ -145,7 +146,7 @@ def run_strat(args=None):
 
     cerebro.broker.setcash(1000.0)
 
-    cerebro.addsizer(bt.sizers.FixedSize, stake=0.05)
+    cerebro.addsizer(bt.sizers.FixedSize, stake=2)
 
     cerebro.broker.setcommission(commission=0.00075)
 
@@ -153,9 +154,6 @@ def run_strat(args=None):
 
     cerebro.addobserver(bt.observers.Benchmark,
                         data=data,
-                        timeframe=bt.TimeFrame.NoTimeFrame)
-
-    cerebro.addobserver(bt.observers.TimeReturn,
                         timeframe=bt.TimeFrame.NoTimeFrame)
 
     #Run the backtarde
