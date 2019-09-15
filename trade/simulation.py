@@ -3,4 +3,4 @@ import time
 
 
 def __algo_simulation__(price):
-    return randrange(3)
+    return randrange(300)

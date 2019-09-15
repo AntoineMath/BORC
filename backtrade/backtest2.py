@@ -4,6 +4,7 @@ import os, sys
 import datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from trade.simulation import __algo_simulation__
+import argparse
 
 
 class TestStrategy(bt.Strategy):
@@ -75,7 +76,51 @@ class TestStrategy(bt.Strategy):
                 self.order = self.sell()
 
 
-if __name__ == "__main__":
+def parse_args(pargs=None):
+
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description='Benchmark/TimeReturn Observers Sample')
+
+    parser.add_argument('--timeframe',
+                        required=False,
+                        action='store',
+                        default=None,
+                        choices=TIMEFRAMES.keys(),
+                        help=('TimeFrame to apply to the Observer'))
+
+    # Plot options
+    parser.add_argument('--plot',
+                        '-p',
+                        nargs='?',
+                        required=False,
+                        metavar='kwargs',
+                        const=True,
+                        help=('Plot the read data applying any kwargs passed\n'
+                              '\n'
+                              'For example:\n'
+                              '\n'
+                              '  --plot style="candle" (to plot candles)\n'))
+
+    if pargs:
+        return parser.parse_args(pargs)
+
+    return parser.parse_args()
+
+
+TIMEFRAMES = {
+    None: None,
+    'days': bt.TimeFrame.Days,
+    'weeks': bt.TimeFrame.Weeks,
+    'months': bt.TimeFrame.Months,
+    'years': bt.TimeFrame.Years,
+    'notimeframe': bt.TimeFrame.NoTimeFrame,
+}
+
+
+def run_strat(args=None):
+
+    args = parse_args(args)
     cerebro = bt.Cerebro()
     cerebro.addstrategy(TestStrategy)
     datapath = os.path.abspath(os.getcwd() +
@@ -101,21 +146,28 @@ if __name__ == "__main__":
 
     cerebro.broker.setcash(1000.0)
 
-    cerebro.addsizer(bt.sizers.FixedSize, stake=0.05)
+    cerebro.addsizer(bt.sizers.FixedSize, stake=2)
 
     cerebro.broker.setcommission(commission=0.00075)
 
     starting_balance = cerebro.broker.getvalue()
 
-    cerebro.run()
+    cerebro.addobserver(bt.observers.Benchmark,
+                        data=data,
+                        timeframe=bt.TimeFrame.NoTimeFrame)
+
+    #Run the backtarde
+    results = cerebro.run()
 
     final_balance = cerebro.broker.getvalue()
     diff_balance = 100 * (final_balance - starting_balance) / starting_balance
 
     print("Starting Balance: %.2f" % starting_balance)
     print("Final Balance: %.2f" % final_balance)
-    print("Difference Balance: %.2f " % diff_balance + " %")
+    print("Profit: %.2f " % diff_balance + "%")
 
     cerebro.plot()
 
-    print()
+
+if __name__ == "__main__":
+    run_strat()
