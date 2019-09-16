@@ -123,8 +123,7 @@ def run_strat(args=None):
     args = parse_args(args)
     cerebro = bt.Cerebro()
     cerebro.addstrategy(TestStrategy)
-    datapath = os.path.abspath(os.getcwd() +
-                               "/data/ETHUSDT_1HOUR_26_08_2019.csv")
+    datapath = "../data/ETHUSDT_1HOUR_26_08_2019.csv"
 
     # Create a Data Feed
     data = btfeeds.GenericCSVData(
