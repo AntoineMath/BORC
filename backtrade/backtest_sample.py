@@ -1,10 +1,7 @@
 import backtrader as bt
 import backtrader.feeds as btfeeds
-import os, sys
+import os
 import datetime
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
-from trade.simulation import __algo_simulation__
-import argparse
 
 
 class TestStrategy(bt.Strategy):
@@ -17,10 +14,6 @@ class TestStrategy(bt.Strategy):
         self.order = None
         self.buyprice = None
         self.buycomm = None
-        starting_price = self.dataclose[1]
-        final_price = self.dataclose[0]
-        diff_price = starting_price - final_price
-        percentage_diff_price = 100 * (-diff_price / starting_price)
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -64,67 +57,22 @@ class TestStrategy(bt.Strategy):
 
         if not self.position:
 
-            if __algo_simulation__("price") == 0:
+            if self.dataclose[0] - self.dataclose[-1] > 200:
 
                 self.log("BUY CREATE, %.2f" % self.dataclose[0])
                 self.order = self.buy()
 
         else:
 
-            if __algo_simulation__("price") == 2:
+            if self.dataclose[0] - self.dataclose[-1] < -200:
                 self.log("SELL CREATE, %.2f" % self.dataclose[0])
                 self.order = self.sell()
 
 
-def parse_args(pargs=None):
-
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Benchmark/TimeReturn Observers Sample')
-
-    parser.add_argument('--timeframe',
-                        required=False,
-                        action='store',
-                        default=None,
-                        choices=TIMEFRAMES.keys(),
-                        help=('TimeFrame to apply to the Observer'))
-
-    # Plot options
-    parser.add_argument('--plot',
-                        '-p',
-                        nargs='?',
-                        required=False,
-                        metavar='kwargs',
-                        const=True,
-                        help=('Plot the read data applying any kwargs passed\n'
-                              '\n'
-                              'For example:\n'
-                              '\n'
-                              '  --plot style="candle" (to plot candles)\n'))
-
-    if pargs:
-        return parser.parse_args(pargs)
-
-    return parser.parse_args()
-
-
-TIMEFRAMES = {
-    None: None,
-    'days': bt.TimeFrame.Days,
-    'weeks': bt.TimeFrame.Weeks,
-    'months': bt.TimeFrame.Months,
-    'years': bt.TimeFrame.Years,
-    'notimeframe': bt.TimeFrame.NoTimeFrame,
-}
-
-
-def run_strat(args=None):
-
-    args = parse_args(args)
+if __name__ == "__main__":
     cerebro = bt.Cerebro()
     cerebro.addstrategy(TestStrategy)
-    datapath = os.path.abspath(os.getcwd() +
-                               "/data/ETHUSDT_1HOUR_26_08_2019.csv")
+    datapath = os.path.abspath(os.getcwd() + "/data/BTC_20_08_2019")
 
     # Create a Data Feed
     data = btfeeds.GenericCSVData(
@@ -146,28 +94,16 @@ def run_strat(args=None):
 
     cerebro.broker.setcash(1000.0)
 
-    cerebro.addsizer(bt.sizers.FixedSize, stake=2)
+    cerebro.addsizer(bt.sizers.FixedSize, stake=0.05)
 
     cerebro.broker.setcommission(commission=0.00075)
 
-    starting_balance = cerebro.broker.getvalue()
+    print("Starting Balance: %.2f" % cerebro.broker.getvalue())
 
-    cerebro.addobserver(bt.observers.Benchmark,
-                        data=data,
-                        timeframe=bt.TimeFrame.NoTimeFrame)
+    cerebro.run()
 
-    #Run the backtarde
-    results = cerebro.run()
-
-    final_balance = cerebro.broker.getvalue()
-    diff_balance = 100 * (final_balance - starting_balance) / starting_balance
-
-    print("Starting Balance: %.2f" % starting_balance)
-    print("Final Balance: %.2f" % final_balance)
-    print("Profit: %.2f " % diff_balance + "%")
+    print("Final Balance: %.2f" % cerebro.broker.getvalue())
 
     cerebro.plot()
 
-
-if __name__ == "__main__":
-    run_strat()
+    print()

@@ -10,7 +10,7 @@ from rl.bt_sea_env import BTSeaEnv
 
 import pandas as pd
 
-df = pd.read_csv('./data/AAPL.csv')
+df = pd.read_csv('.\data\AAPL.csv')
 df = df.sort_values('Date')
 
 # The algorithms require a vectorized environment to run
