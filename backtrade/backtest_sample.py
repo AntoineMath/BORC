@@ -5,6 +5,15 @@ import datetime
 
 
 class TestStrategy(bt.Strategy):
+    """Sample to backtrade a strategy.
+
+    1)Put your strategy in the method next()
+    2)Put your data on variable datapath
+    3)Run this file to see results
+
+    Others parameters (amount of the account at first, stake of each trade, ...)
+    can be change easily, see https://www.backtrader.com/ for more informations
+    """
     def log(self, txt, dt=None):
         dt = dt or self.datas[0].datetime.date(0)
         print("%s, %s" % (dt.isoformat(), txt))
