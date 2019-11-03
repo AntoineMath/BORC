@@ -99,20 +99,13 @@ if __name__ == "__main__":
         compression=30,
     )
 
+    #Set up and lauch the backtrade
     cerebro.adddata(data)
-
     cerebro.broker.setcash(1000.0)
-
     cerebro.addsizer(bt.sizers.FixedSize, stake=0.05)
-
     cerebro.broker.setcommission(commission=0.00075)
-
     print("Starting Balance: %.2f" % cerebro.broker.getvalue())
-
     cerebro.run()
-
     print("Final Balance: %.2f" % cerebro.broker.getvalue())
-
     cerebro.plot()
-
     print()
