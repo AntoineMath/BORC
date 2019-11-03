@@ -8,6 +8,11 @@ import argparse
 
 
 class TestStrategy(bt.Strategy):
+    """Backtrade of the strategy _algo_simulation_
+    1) The strategy is defined in the method next
+    2) The data tested is in datapath
+    3) The function run_strat() is not part of this class
+    """
     def log(self, txt, dt=None):
         dt = dt or self.datas[0].datetime.date(0)
         print("%s, %s" % (dt.isoformat(), txt))
