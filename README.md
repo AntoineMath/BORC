@@ -1,5 +1,5 @@
 # BORC
-RL trading agent using Proximal Policy Optimization.
+Trading agent using Deep-Q reinforcement learning technique.
 
 ## Lore
 BORC is a hybrid from an orc and a bot. His natural environment is the BT sea. BORC is still young but he is growing up quickly, and thanks to RL, he will soon be able to hunt his first whale.
